@@ -1,0 +1,64 @@
+{% extends "layout.html" %}
+{% block content %}
+	<h1>CloudyTube</h1>
+	<p>This service allows you to extract audio from videos (such as from YouTube) and upload them to your own Overcast® player. This requires an Overcast® Premium membership.</p>
+	<h2>Upload video</h2>
+	<script type="text/javascript">
+		function submitForm(form) {
+			let use_env_credentials = document.getElementById("username").checked
+			let username = document.getElementById("username").value
+			let password = document.getElementById("password").value
+			let video_url = document.getElementById("video_url").value
+
+			var request = new XMLHttpRequest()
+			request.open("POST", "/submit")
+
+			request.onreadystatechange = function() {
+				console.log(request.readyState)
+				if(request.readyState == XMLHttpRequest.DONE && request.status == 200) {
+					startPolling(request.responseText);
+				}
+			}
+
+			request.send(new FormData(form))
+
+			return false
+		}
+
+		function getStatus() {
+			var request = new XMLHttpRequest()
+			request.open("GET", "/progress/" + data["progress_id"])
+
+			request.onreadystatechange = function() {
+				if(request.readyState == 4 && request.status == 200) {
+					console.log(request.responseText);
+					if (request.responseText == "done") {
+						clearInterval(pollingProcess)
+					}
+				}
+			}
+
+			request.send()
+		}
+
+		function startPolling(response) {
+			try {
+				data = JSON.parse(response)
+
+				pollingProcess = setInterval(getStatus, 100)
+			} catch (e) {
+				console.log(e)
+			}
+		}
+	</script>
+	<form method="post" onsubmit="return submitForm(this);">
+		<h3>Overcast® credentials</h3>
+{% if env_credentials_supplied %}
+		<p><input type="checkbox" name="use_env_credentials" id="use_env_credentials" value="true"> <label for="use_env_credentials">Use credentials supplied as environment variables</label></label></p>
+{% endif %}
+		<p><label for="username">Username: </label> <input type="text" name="username" id="username" placeholder="Username"></p>
+		<p><label for="password">Password: </label> <input type="password" name="password" id="password" placeholder="Password"></p>
+		<p><label for="video_url">Video URL: </label> <input type="text" name="video_url" id="video_url" value="https://www.youtube.com/watch?v=tPEE9ZwTmy0" placeholder="Video URL"></p>
+		<p><input type="submit" name="upload" value="Upload"></p>
+	</form>
+{% endblock %}
