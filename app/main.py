@@ -70,7 +70,7 @@ class DownloadUploadThread(threading.Thread):
                 print('Done downloading, now converting…' + self.mp3_path)
 
         ydl_opts = {
-            'format': 'bestaudio[ext=mp3]/bestaudio[ext=m4a]/bestaudio/best',
+            'format': 'bestaudio[ext=mp3]/bestaudio[ext=m4a]/bestaudio/best ',
             'postprocessors': [{
                 'key': 'FFmpegExtractAudio',
                 'preferredcodec': 'mp3',
