@@ -1,7 +1,8 @@
 {% extends "layout.html" %}
 {% block content %}
 	<h1>CloudyTube</h1>
-	<p>This service allows you to extract audio from videos (such as from YouTube) and upload them to your own Overcast® player. This requires an Overcast® Premium membership.</p>
+	<p>This service allows you to extract audio from videos (from any of the websites supported by <a href="https://youtube-dl.org/">youtube-dl</a>) and upload them to your own <a href="https://overcast.fm/">Overcast®</a> player.
+		This requires an Overcast® Premium membership.</p>
 	<h2>Upload video</h2>
 	<h3 id="status"></h3>
 	<form method="post" onsubmit="return submitForm(this);" id="form">
