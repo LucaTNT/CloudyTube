@@ -4,4 +4,8 @@ RUN apk --no-cache add git && git clone https://github.com/Andrew-Morozko/cloudy
 
 FROM tiangolo/meinheld-gunicorn-flask:python3.8-alpine3.11
 
-COPY --from=builder /go/cloudy-uploader/cloudy-uploader /usr/local/bin
+WORKDIR /app
+COPY --from=builder /go/cloudy-uploader/cloudy-uploader /app/cloudy-uploader
+RUN apk --no-cache add ffmpeg
+COPY ./app /app
+RUN pip3 install -r requirements.txt
