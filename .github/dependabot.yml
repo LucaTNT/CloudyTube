@@ -3,6 +3,6 @@ updates:
   - package-ecosystem: "pip"
     directory: "/app/"
     schedule:
-      interval: "live"
+      interval: "daily"
     assignees:
       - "LucaTNT"
