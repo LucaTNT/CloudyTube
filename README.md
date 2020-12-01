@@ -1,5 +1,7 @@
 This simple web app allows you to submit the URL of a video (from any of the websites supported by [youtube-dl](https://youtube-dl.org/)): the video will be downloaded, its audio will be extracted, converted to mp3 and uploaded to your own [Overcast® player](https://overcast.fm/). This requires an Overcast® Premium membership.
 
+The uploading functionality of this tool is made possible through the great [cloudy-uploader](https://github.com/Andrew-Morozko/cloudy-uploader) by [Andrew Morozko](https://github.com/Andrew-Morozko).
+
 Let me just make one thing clear: design was not a priority when building this tool, it was mostly for my own use (and it shows).
 
 ## Demo installation
