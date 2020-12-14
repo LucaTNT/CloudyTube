@@ -8,7 +8,7 @@
 	<form method="post" onsubmit="return submitForm(this);" id="form">
 		<h3>Overcast® credentials</h3>
 {% if env_credentials_supplied %}
-		<p><input type="checkbox" name="use_env_credentials" id="use_env_credentials" value="true"> <label for="use_env_credentials">Use credentials supplied as environment variables</label></p>
+		<p><input type="checkbox" name="use_env_credentials" id="use_env_credentials" value="true" {{ env_credentials_default }}> <label for="use_env_credentials">Use credentials supplied as environment variables</label></p>
 {% endif %}
 		<p><label for="username">Username: </label> <input type="text" name="username" id="username" placeholder="Username"></p>
 		<p><label for="password">Password: </label> <input type="password" name="password" id="password" placeholder="Password"></p>

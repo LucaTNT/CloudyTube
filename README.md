@@ -17,3 +17,13 @@ Or you can use the `lucatnt/cloudytube` Docker image
 	docker run -p 5000:80 lucatnt/als2cue_web
 
 Either way you will end up with a webserver running on port 5000.
+
+## Optional settings
+There are four optional settings that can be supplied as environment variables.
+
+| Variable                  | Default value | Required | Description                                                                                                       |
+|---------------------------|---------------|----------|-------------------------------------------------------------------------------------------------------------------|
+| `OVERCAST_USERNAME`       |               | No       | Overcast default username                                                                                         |
+| `OVERCAST_PASSWORD`       |               | No       | Overcast default password                                                                                         |
+| `ENV_CREDENTIALS_DEFAULT` | `false`       | No       | If set to `true`, the checkbox that selects the environment-supplied credentials to be used is checked by default |
+| `DEFAULT_VIDEO_URL`       |               | No       | The default video URL. Useful for testing.                                                                        |

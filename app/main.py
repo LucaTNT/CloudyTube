@@ -6,6 +6,7 @@ app = Flask(__name__, static_folder="templates/static")
 
 OVERCAST_USERNAME = os.getenv("OVERCAST_USERNAME")
 OVERCAST_PASSWORD = os.getenv("OVERCAST_PASSWORD")
+ENV_CREDENTIALS_DEFAULT = ("checked" if os.getenv("ENV_CREDENTIALS_DEFAULT") == "true" else "")
 DEFAULT_VIDEO_URL = os.getenv("DEFAULT_VIDEO_URL") or ""
 env_credentials_supplied = (OVERCAST_USERNAME != None and
                             OVERCAST_PASSWORD != None and
@@ -95,7 +96,7 @@ class DownloadUploadThread(threading.Thread):
 
 @app.route("/")
 def form():
-    return render_template("form.html", env_credentials_supplied=env_credentials_supplied, default_video_url=DEFAULT_VIDEO_URL)
+    return render_template("form.html", env_credentials_supplied=env_credentials_supplied, env_credentials_default=ENV_CREDENTIALS_DEFAULT, default_video_url=DEFAULT_VIDEO_URL)
 
 @app.route("/api/v1/job", methods=["POST"])
 def jobPost():
@@ -158,4 +159,4 @@ def status(job_id):
     return r
 
 if __name__ == "__main__":
-    app.run(debug=("DEBUG" in os.environ))
+    app.run(host='0.0.0.0', debug=("DEBUG" in os.environ))
