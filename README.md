@@ -14,7 +14,7 @@ You can either run this with Python (it requires Flask, so `pip3 install flask`)
 
 Or you can use the `lucatnt/cloudytube` Docker image
 
-	docker run -p 5000:80 lucatnt/als2cue_web
+	docker run -p 5000:80 lucatnt/cloudytube
 
 Either way you will end up with a webserver running on port 5000.
 
