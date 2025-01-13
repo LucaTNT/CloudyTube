@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import os, youtube_dl, threading, random, json, subprocess
+import os, yt_dlp, threading, random, json, subprocess
 from flask import Flask, render_template, request, Response
 
 app = Flask(__name__, static_folder="templates/static")
@@ -58,7 +58,6 @@ class DownloadUploadThread(threading.Thread):
 
 
         def my_hook(d):
-            print(d)
             if d["status"] == "downloading":
                 self.progress = d["_percent_str"]
             if d['status'] == 'finished':
@@ -79,11 +78,12 @@ class DownloadUploadThread(threading.Thread):
             }],
             'logger': MyLogger(),
             'progress_hooks': [my_hook],
+            'color': 'never',
             'playlistend': 2,
             "restrictfilenames": True,
             "outtmpl": "%(upload_date)s_%(title)s.%(ext)s"
         }
-        with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             try:
                 result = ydl.download([self.video_url])
                 print(result)

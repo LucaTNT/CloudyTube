@@ -1,2 +1,2 @@
-youtube-dl
-flask==1.1.2
+yt_dlp
+flask~=3.1
