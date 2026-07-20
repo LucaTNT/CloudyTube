@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import os, yt_dlp, threading, random, json, subprocess
+import os, shutil, yt_dlp, threading, random, json, subprocess
 from flask import Flask, render_template, request, Response
 
 app = Flask(__name__, static_folder="templates/static")
@@ -69,6 +69,11 @@ class DownloadUploadThread(threading.Thread):
                 self.mp3_path = ".".join(filename_parts)
                 print('Done downloading, now converting…' + self.mp3_path)
 
+        nodejs_path = shutil.which('nodejs') or shutil.which('node')
+        js_runtime_config = {}
+        if nodejs_path:
+            js_runtime_config['nodejs'] = {'executable': nodejs_path}
+
         ydl_opts = {
             'format': 'bestaudio[ext=mp3]/bestaudio[ext=m4a]/bestaudio/best ',
             'postprocessors': [{
@@ -81,7 +86,8 @@ class DownloadUploadThread(threading.Thread):
             'color': 'never',
             'playlistend': 2,
             "restrictfilenames": True,
-            "outtmpl": "%(upload_date)s_%(title)s.%(ext)s"
+            "outtmpl": "%(upload_date)s_%(title)s.%(ext)s",
+            'js_runtimes': js_runtime_config
         }
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             try:
