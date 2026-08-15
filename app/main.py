@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import os, shutil, yt_dlp, threading, random, json, subprocess
+import os, shutil, yt_dlp, threading, uuid, time, json, subprocess, traceback
 from flask import Flask, render_template, request, Response
 
 app = Flask(__name__, static_folder="templates/static")
@@ -13,6 +13,14 @@ env_credentials_supplied = (OVERCAST_USERNAME != None and
                             len(OVERCAST_USERNAME) > 0 and
                             len(OVERCAST_PASSWORD) > 0)
 jobs = {}
+JOB_RETENTION_SECONDS = 3600
+
+def prune_finished_jobs():
+    now = time.time()
+    stale_ids = [job_id for job_id, job in jobs.items()
+                 if job.status in ("done", "error") and (now - job.created_at) > JOB_RETENTION_SECONDS]
+    for job_id in stale_ids:
+        del jobs[job_id]
 
 class DownloadUploadThread(threading.Thread):
     def __init__(self, video_url, cloudyconfig):
@@ -22,6 +30,7 @@ class DownloadUploadThread(threading.Thread):
         self.error_text = ""
         self.video_url = video_url
         self.mp3_path = ""
+        self.created_at = time.time()
         super().__init__()
 
     def upload(self):
@@ -34,7 +43,11 @@ class DownloadUploadThread(threading.Thread):
             "--password", self.cloudyconfig["password"],
             self.mp3_path
         ], capture_output=True)
-        print(cloudyuploader)
+        print("cloudy-uploader exited with code %d" % cloudyuploader.returncode)
+        if cloudyuploader.stdout:
+            print(cloudyuploader.stdout.decode(errors="replace"))
+        if cloudyuploader.stderr:
+            print(cloudyuploader.stderr.decode(errors="replace"))
         if (cloudyuploader.returncode != 0):
             self.status = "error"
             self.error_text = "Wrong username or password"
@@ -97,7 +110,7 @@ class DownloadUploadThread(threading.Thread):
             except Exception as e:
                 self.status = "error"
                 self.error_text = "Video not found or not downloadable"
-                print(e)
+                print(traceback.format_exc())
 
 
 @app.route("/")
@@ -128,7 +141,8 @@ def jobPost():
         }
         video_url = request.form["video_url"]
 
-        job_id = random.randint(0, 10000)
+        prune_finished_jobs()
+        job_id = uuid.uuid4().hex
         jobs[job_id] = DownloadUploadThread(video_url, cloudyconfig)
         jobs[job_id].start()
         output = {
@@ -142,7 +156,7 @@ def jobPost():
 
     return r
 
-@app.route('/api/v1/status/<int:job_id>')
+@app.route('/api/v1/status/<job_id>')
 def status(job_id):
     if (job_id in jobs):
         output = {
@@ -165,4 +179,4 @@ def status(job_id):
     return r
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', debug=("DEBUG" in os.environ))
+    app.run(host='0.0.0.0', debug=(os.getenv("DEBUG", "").lower() == "true"))

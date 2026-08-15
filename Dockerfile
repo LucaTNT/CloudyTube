@@ -1,7 +1,7 @@
 FROM golang:1.22-alpine AS builder
 
 RUN apk add --no-cache git && \
-    git clone https://github.com/Andrew-Morozko/cloudy-uploader.git && \
+    git clone --branch v1.1.2 --depth 1 https://github.com/Andrew-Morozko/cloudy-uploader.git && \
     cd cloudy-uploader && \
     go build
 
@@ -22,6 +22,12 @@ COPY ./app /app
 RUN python -m pip install --upgrade pip && \
     python -m pip install --no-cache-dir -r requirements.txt
 
-EXPOSE 80
+RUN useradd --no-create-home --shell /usr/sbin/nologin appuser && \
+    chown -R appuser:appuser /app
+USER appuser
 
-CMD ["gunicorn", "--bind", "0.0.0.0:80", "main:app"]
+EXPOSE 8080
+
+HEALTHCHECK CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8080/')" || exit 1
+
+CMD ["gunicorn", "--bind", "0.0.0.0:8080", "main:app"]
