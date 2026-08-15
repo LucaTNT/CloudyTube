@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-import os, shutil, yt_dlp, threading, uuid, time, json, subprocess, traceback
-from flask import Flask, render_template, request, Response
+import os, shutil, yt_dlp, threading, uuid, time, subprocess, traceback
+from flask import Flask, render_template, request, jsonify
 
 app = Flask(__name__, static_folder="templates/static")
 
@@ -151,10 +151,7 @@ def jobPost():
         }
         status = 200
 
-    r = Response(response=json.dumps(output), status=status, mimetype="application/json")
-    r.headers["Content-Type"] = "application/json; charset=utf-8"
-
-    return r
+    return jsonify(output), status
 
 @app.route('/api/v1/status/<job_id>')
 def status(job_id):
@@ -174,9 +171,7 @@ def status(job_id):
 
     status = (200 if output["status"] != "error" else 400)
 
-    r = Response(response=json.dumps(output), status=status, mimetype="application/json")
-    r.headers["Content-Type"] = "application/json; charset=utf-8"
-    return r
+    return jsonify(output), status
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', debug=(os.getenv("DEBUG", "").lower() == "true"))
