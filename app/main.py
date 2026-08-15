@@ -35,26 +35,37 @@ class DownloadUploadThread(threading.Thread):
 
     def upload(self):
         self.status = "uploading"
-        cloudyuploader = subprocess.run([
-            "%s/cloudy-uploader" % os.path.dirname(os.path.realpath(__file__)),
-            "--no-load-creds",
-            "--silent",
-            "--login", self.cloudyconfig["username"],
-            "--password", self.cloudyconfig["password"],
-            self.mp3_path
-        ], capture_output=True)
+        try:
+            cloudyuploader = subprocess.run([
+                "%s/cloudy-uploader" % os.path.dirname(os.path.realpath(__file__)),
+                "--no-load-creds",
+                "--silent",
+                "--login", self.cloudyconfig["username"],
+                "--password", self.cloudyconfig["password"],
+                self.mp3_path
+            ], capture_output=True, timeout=300)
+        except (OSError, subprocess.TimeoutExpired):
+            self.status = "error"
+            self.error_text = "Upload failed to start"
+            print(traceback.format_exc())
+            return
+        finally:
+            if os.path.exists(self.mp3_path):
+                try:
+                    os.unlink(self.mp3_path)
+                except OSError:
+                    print(traceback.format_exc())
+
         print("cloudy-uploader exited with code %d" % cloudyuploader.returncode)
         if cloudyuploader.stdout:
             print(cloudyuploader.stdout.decode(errors="replace"))
         if cloudyuploader.stderr:
             print(cloudyuploader.stderr.decode(errors="replace"))
-        if (cloudyuploader.returncode != 0):
+        if cloudyuploader.returncode != 0:
             self.status = "error"
             self.error_text = "Wrong username or password"
         else:
             self.status = "done"
-
-        os.unlink(self.mp3_path)
 
     def run(self):
         class MyLogger(object):
@@ -106,11 +117,12 @@ class DownloadUploadThread(threading.Thread):
             try:
                 result = ydl.download([self.video_url])
                 print(result)
-                self.upload()
-            except Exception as e:
+            except Exception:
                 self.status = "error"
                 self.error_text = "Video not found or not downloadable"
                 print(traceback.format_exc())
+                return
+        self.upload()
 
 
 @app.route("/")
