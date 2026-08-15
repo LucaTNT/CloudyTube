@@ -14,6 +14,8 @@ env_credentials_supplied = (OVERCAST_USERNAME != None and
                             len(OVERCAST_PASSWORD) > 0)
 jobs = {}
 JOB_RETENTION_SECONDS = 3600
+MAX_CONCURRENT_JOBS = 3
+job_semaphore = threading.Semaphore(MAX_CONCURRENT_JOBS)
 
 def prune_finished_jobs():
     now = time.time()
@@ -57,60 +59,61 @@ class DownloadUploadThread(threading.Thread):
         os.unlink(self.mp3_path)
 
     def run(self):
-        class MyLogger(object):
-            def debug(self, msg):
-                print(msg)
-                pass
+        with job_semaphore:
+            class MyLogger(object):
+                def debug(self, msg):
+                    print(msg)
+                    pass
 
-            def warning(self, msg):
-                print(msg)
-                pass
+                def warning(self, msg):
+                    print(msg)
+                    pass
 
-            def error(self, msg):
-                print(msg)
+                def error(self, msg):
+                    print(msg)
 
 
-        def my_hook(d):
-            if d["status"] == "downloading":
-                self.progress = d["_percent_str"]
-            if d['status'] == 'finished':
-                self.status = "converting"
-                self.progress = "100%"
-                filename_parts = d["filename"].split(".")
-                filename_parts.pop()
-                filename_parts.append("mp3")
-                self.mp3_path = ".".join(filename_parts)
-                print('Done downloading, now converting…' + self.mp3_path)
+            def my_hook(d):
+                if d["status"] == "downloading":
+                    self.progress = d["_percent_str"]
+                if d['status'] == 'finished':
+                    self.status = "converting"
+                    self.progress = "100%"
+                    filename_parts = d["filename"].split(".")
+                    filename_parts.pop()
+                    filename_parts.append("mp3")
+                    self.mp3_path = ".".join(filename_parts)
+                    print('Done downloading, now converting…' + self.mp3_path)
 
-        nodejs_path = shutil.which('nodejs') or shutil.which('node')
-        js_runtime_config = {}
-        if nodejs_path:
-            js_runtime_config['nodejs'] = {'executable': nodejs_path}
+            nodejs_path = shutil.which('nodejs') or shutil.which('node')
+            js_runtime_config = {}
+            if nodejs_path:
+                js_runtime_config['nodejs'] = {'executable': nodejs_path}
 
-        ydl_opts = {
-            'format': 'bestaudio[ext=mp3]/bestaudio[ext=m4a]/bestaudio/best ',
-            'postprocessors': [{
-                'key': 'FFmpegExtractAudio',
-                'preferredcodec': 'mp3',
-                'preferredquality': '128',
-            }],
-            'logger': MyLogger(),
-            'progress_hooks': [my_hook],
-            'color': 'never',
-            'playlistend': 2,
-            "restrictfilenames": True,
-            "outtmpl": "%(upload_date)s_%(title)s.%(ext)s",
-            'js_runtimes': js_runtime_config
-        }
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            try:
-                result = ydl.download([self.video_url])
-                print(result)
-                self.upload()
-            except Exception as e:
-                self.status = "error"
-                self.error_text = "Video not found or not downloadable"
-                print(traceback.format_exc())
+            ydl_opts = {
+                'format': 'bestaudio[ext=mp3]/bestaudio[ext=m4a]/bestaudio/best ',
+                'postprocessors': [{
+                    'key': 'FFmpegExtractAudio',
+                    'preferredcodec': 'mp3',
+                    'preferredquality': '128',
+                }],
+                'logger': MyLogger(),
+                'progress_hooks': [my_hook],
+                'color': 'never',
+                'playlistend': 2,
+                "restrictfilenames": True,
+                "outtmpl": "%(upload_date)s_%(title)s.%(ext)s",
+                'js_runtimes': js_runtime_config
+            }
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                try:
+                    result = ydl.download([self.video_url])
+                    print(result)
+                    self.upload()
+                except Exception as e:
+                    self.status = "error"
+                    self.error_text = "Video not found or not downloadable"
+                    print(traceback.format_exc())
 
 
 @app.route("/")
