@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import os, shutil, yt_dlp, threading, uuid, time, json, subprocess, traceback
 from flask import Flask, render_template, request, Response
+from urllib.parse import urlparse
 
 app = Flask(__name__, static_folder="templates/static")
 
@@ -135,21 +136,30 @@ def jobPost():
         }
         status = 400
     else:
-        cloudyconfig = {
-            "username": username,
-            "password": password
-        }
         video_url = request.form["video_url"]
+        parsed_url = urlparse(video_url)
 
-        prune_finished_jobs()
-        job_id = uuid.uuid4().hex
-        jobs[job_id] = DownloadUploadThread(video_url, cloudyconfig)
-        jobs[job_id].start()
-        output = {
-            "status": "created",
-            "status_id": job_id
-        }
-        status = 200
+        if parsed_url.scheme not in ("http", "https") or not parsed_url.netloc:
+            output = {
+                "status": "error",
+                "error": "Invalid video URL"
+            }
+            status = 400
+        else:
+            cloudyconfig = {
+                "username": username,
+                "password": password
+            }
+
+            prune_finished_jobs()
+            job_id = uuid.uuid4().hex
+            jobs[job_id] = DownloadUploadThread(video_url, cloudyconfig)
+            jobs[job_id].start()
+            output = {
+                "status": "created",
+                "status_id": job_id
+            }
+            status = 200
 
     r = Response(response=json.dumps(output), status=status, mimetype="application/json")
     r.headers["Content-Type"] = "application/json; charset=utf-8"
