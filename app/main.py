@@ -16,6 +16,7 @@ jobs = {}
 JOB_RETENTION_SECONDS = 3600
 MAX_CONCURRENT_JOBS = 3
 job_semaphore = threading.Semaphore(MAX_CONCURRENT_JOBS)
+NODEJS_PATH = shutil.which('nodejs') or shutil.which('node')
 
 def prune_finished_jobs():
     now = time.time()
@@ -96,10 +97,9 @@ class DownloadUploadThread(threading.Thread):
                     self.mp3_path = ".".join(filename_parts)
                     print('Done downloading, now converting…' + self.mp3_path)
 
-            nodejs_path = shutil.which('nodejs') or shutil.which('node')
             js_runtime_config = {}
-            if nodejs_path:
-                js_runtime_config['nodejs'] = {'executable': nodejs_path}
+            if NODEJS_PATH:
+                js_runtime_config['nodejs'] = {'executable': NODEJS_PATH}
 
             ydl_opts = {
                 'format': 'bestaudio[ext=mp3]/bestaudio[ext=m4a]/bestaudio/best ',
