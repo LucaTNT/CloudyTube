@@ -76,11 +76,9 @@ class DownloadUploadThread(threading.Thread):
             class MyLogger(object):
                 def debug(self, msg):
                     print(msg)
-                    pass
 
                 def warning(self, msg):
                     print(msg)
-                    pass
 
                 def error(self, msg):
                     print(msg)
@@ -92,10 +90,7 @@ class DownloadUploadThread(threading.Thread):
                 if d['status'] == 'finished':
                     self.status = "converting"
                     self.progress = "100%"
-                    filename_parts = d["filename"].split(".")
-                    filename_parts.pop()
-                    filename_parts.append("mp3")
-                    self.mp3_path = ".".join(filename_parts)
+                    self.mp3_path = os.path.splitext(d["filename"])[0] + ".mp3"
                     print('Done downloading, now converting…' + self.mp3_path)
 
             js_runtime_config = {}
@@ -179,7 +174,7 @@ def jobPost():
     return jsonify(output), status
 
 @app.route('/api/v1/status/<job_id>')
-def status(job_id):
+def job_status(job_id):
     if (job_id in jobs):
         output = {
             "status": jobs[job_id].status,
