@@ -30,4 +30,4 @@ EXPOSE 8080
 
 HEALTHCHECK CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8080/')" || exit 1
 
-CMD ["gunicorn", "--bind", "0.0.0.0:8080", "--no-control-socket", "main:app"]
+CMD ["gunicorn", "--bind", "0.0.0.0:8080", "--workers", "2", "--no-control-socket", "main:app"]
