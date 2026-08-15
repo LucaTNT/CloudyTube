@@ -10,8 +10,10 @@
 {% if env_credentials_supplied %}
 		<p><input type="checkbox" name="use_env_credentials" id="use_env_credentials" value="true" {{ env_credentials_default }}> <label for="use_env_credentials">Use credentials supplied as environment variables</label></p>
 {% endif %}
+		<div id="credentials_fields">
 		<p><label for="username">Username: </label> <input type="text" name="username" id="username" placeholder="Username"></p>
 		<p><label for="password">Password: </label> <input type="password" name="password" id="password" placeholder="Password"></p>
+		</div>
 		<h3>Video</h3>
 		<p><label for="video_url">Video URL: </label> <input type="text" name="video_url" id="video_url" value="{{ default_video_url }}" placeholder="Video URL"></p>
 		<p><input type="submit" name="upload" value="Upload"></p>

@@ -87,8 +87,13 @@ function startPolling(data) {
 function setCredentialsField(enabled) {
     document.getElementById("username").disabled = !enabled
     document.getElementById("password").disabled = !enabled
+    document.getElementById("credentials_fields").style.display = enabled ? "block" : "none"
 }
 
-document.getElementById("use_env_credentials").addEventListener('change', function() {
-    setCredentialsField(!this.checked)
-  });
+var useEnvCredentialsCheckbox = document.getElementById("use_env_credentials")
+if (useEnvCredentialsCheckbox) {
+    useEnvCredentialsCheckbox.addEventListener('change', function() {
+        setCredentialsField(!this.checked)
+    })
+    setCredentialsField(!useEnvCredentialsCheckbox.checked)
+}
