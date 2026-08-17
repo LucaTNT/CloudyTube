@@ -8,7 +8,7 @@ Let me just make one thing clear: design was not a priority when building this t
 You can use my demo install at [cloudytube.lucatnt.com](https://cloudytube.lucatnt.com/).
 
 ## How to use this thing
-You can either run this with Python (it requires Flask, so `pip3 install flask`)
+You can either run this with Python (install the dependencies first with `pip3 install -r app/requirements.txt`)
 
 	python3 main.py
 
